@@ -1,0 +1,54 @@
+# Frontend
+server {
+    include includes/http.conf;
+    #include includes/https.conf;
+    server_name sales.courts.local;
+    set $MAGE_ROOT /home/minh/Projects/courts/courts-sales;
+    set $MAGE_MODE 'developer';
+    include includes/magento2.conf;
+    location ~ ^/(status|ping)$ {
+        access_log off;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_pass fastcgi_backend_70;
+    }
+    error_log /var/log/nginx/courts-sales.local_error.log warn;
+    access_log /var/log/nginx/courts-sales.local_access.log secure buffer=32k;
+    # limit_req zone=gulag burst=200 nodelay;
+}
+
+# HTTPS termination
+server {
+    include includes/https.conf;
+    server_name sales.courts.local;
+    location / {
+        proxy_pass http://127.0.0.1:80;
+        proxy_set_header X-Real-IP  $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Port 443;
+        proxy_set_header Host $host;
+    }
+    location ~ ^/(status|ping)$ {
+        access_log off;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_pass fastcgi_backend_70;
+    }
+    # error_log /var/log/nginx/courts-sales.local_error.log warn;
+    # access_log /var/log/nginx/courts-sales.local_access.log secure buffer=32k;
+    # limit_req zone=gulag burst=200 nodelay;
+}
+
+# Admin
+server {
+    include includes/http.conf;
+    include includes/https.conf;
+    server_name admin-sales.courts.local;
+    set $MAGE_ROOT /home/minh/Projects/courts/courts-sales;
+    set $MAGE_MODE 'developer';
+    include includes/magento2.conf;
+    error_log /var/log/nginx/courts-sales.local_error.log warn;
+    access_log /var/log/nginx/courts-sales.local_access.log secure buffer=32k;
+    # limit_req zone=gulag burst=200 nodelay;
+}

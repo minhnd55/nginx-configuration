@@ -1,0 +1,11 @@
+server {
+    include includes/http.conf;
+    include includes/https.conf;
+    server_name magento.local;
+    root /path/to/magento;
+    index index.php index.html;
+    include includes/magento.conf;
+    error_log /var/log/nginx/magento.local_error.log warn;
+    access_log /var/log/nginx/magento.local_access.log secure buffer=32k;
+    # limit_req zone=gulag burst=200 nodelay;
+}

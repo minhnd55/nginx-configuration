@@ -1,0 +1,38 @@
+# Redirect everything to the main site. We use a separate server statement and NOT an if statement - see http://wiki.nginx.org/IfIsEvil
+
+# server {
+#   server_name  _;
+#   return 302 $scheme://wp.local$request_uri;
+# }
+
+map $uri $blogname{
+    ~^(?P<blogpath>/[^/]+/)files/(.*)       $blogpath ;
+}
+
+map $blogname $blogid{
+    default -999;
+
+    #Ref: http://wordpress.org/extend/plugins/nginx-helper/
+    #include /var/www/wordpress/wp-content/plugins/nginx-helper/map.conf ;
+}
+
+server {
+	include includes/http.conf;
+  include includes/https.conf;
+	server_name wp.local;
+	root /home/minh/Projects/wordpress-4.9.7/wordpress;
+
+	index index.php;
+
+	include includes/restrictions.conf;
+
+	# Additional rules go here.
+
+	# Only include one of the files below.
+	include includes/wordpress.conf;
+#	include includes/wordpress-ms-subdir.conf;
+#	include includes/wordpress-ms-subdomain.conf;
+
+	error_log /var/log/nginx/wp.local_error.log warn;
+  access_log /var/log/nginx/wp.local_access.log secure buffer=32k;
+}
